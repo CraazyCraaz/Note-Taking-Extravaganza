@@ -38,7 +38,7 @@ var deleteNote = function (id) {
 // ==============================================================================
 // If there is an activeNote, display it, otherwise render empty inputs
 // ==============================================================================
-var renderActiveNote = function () {
+var renderActiveNote = function() {
   $saveNoteBtn.hide();
 
   if (activeNote.id) {
@@ -57,12 +57,16 @@ var renderActiveNote = function () {
 // Get the note data from the inputs, save it to the db and update the view
 // ==============================================================================
 var handleNoteSave = function () {
+  // this adds a unique id, knows to delete and update that specific one
+  let uniqueId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+
   var newNote = {
+    id: uniqueId,
     note_title: $noteTitle.val(),
     note_text_area: $noteText.val()
   };
 
-  saveNote(newNote).then(function (data) {
+  saveNote(newNote).then(function (db) {
     getAndRenderNotes();
     renderActiveNote();
   });
@@ -76,15 +80,11 @@ var handleNoteDelete = function (event) {
   // ============================================================================
   event.stopPropagation();
 
-  var note = $(this)
-    .parent(".list-group-item")
-    .data();
+  var noteID = $(this).attr("data-id");
 
-  if (activeNote.id === note.id) {
-    activeNote = {};
-  }
+   
 
-  deleteNote(note.id).then(function () {
+  deleteNote(noteID).then(function () {
     getAndRenderNotes();
     renderActiveNote();
   });
@@ -118,20 +118,20 @@ var handleRenderSaveBtn = function () {
 // ==============================================================================
 // Render's the list of note titles
 // ==============================================================================
-var renderNoteList = function (notes) {
+var renderNoteList = function (db) {
   $noteList.empty();
 
   var noteListItems = [];
 
-  for (var i = 0; i < notes.length; i++) {
-    var note = notes[i];
+  for (var i = 0; i < db.length; i++) {
+    var note = db[i];
 
     var $li = $("<li class='list-group-item'>").data(note);
-    var $span = $("<span>").text(note.title);
+    var $span = $("<span>").text(note.note_title);
     var $delBtn = $(
       "<i class='fas fa-trash-alt float-right text-danger delete-note'>"
     );
-
+    $delBtn.attr("data-id", note.id)
     $li.append($span, $delBtn);
     noteListItems.push($li);
   }
@@ -142,8 +142,8 @@ var renderNoteList = function (notes) {
 // Gets notes from the db and renders them to the sidebar
 // ==============================================================================
 var getAndRenderNotes = function () {
-  return getNotes().then(function (data) {
-    renderNoteList(data);
+  return getNotes().then(function (db) {
+    renderNoteList(db);
   });
 };
 
