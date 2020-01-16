@@ -80,9 +80,7 @@ var handleNoteDelete = function (event) {
   // ============================================================================
   event.stopPropagation();
 
-  var noteID = $(this).attr("data-id");
-
-   
+  var noteID = $(this).attr("data-id");   
 
   deleteNote(noteID).then(function () {
     getAndRenderNotes();
